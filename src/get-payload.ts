@@ -1,6 +1,6 @@
 //src/get-payload.ts
 import type { InitOptions } from "payload/config";
-import payload from "payload";
+import payload, { Payload } from "payload";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -22,7 +22,9 @@ interface Args {
   initOptions?: Partial<InitOptions>;
 }
 
-export const getPayloadClient = async ({ initOptions }: Args = {}) => {
+export const getPayloadClient = async ({
+  initOptions,
+}: Args = {}): Promise<Payload> => {
   if (!process.env.PAYlOAD_SECRET) {
     throw new Error("PAYlOAD_SECRET is missing");
   }
