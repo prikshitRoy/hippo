@@ -1,10 +1,8 @@
-import { publishProcedure, router } from "./trpc";
+import { authRouter } from "./auth-router";
+import { router } from "./trpc";
 
 export const appRouter = router({
-  //! Inside developer can define any API route. Example 👇 Hello
-  anyApiRoute: publishProcedure.query(() => {
-    return "Hello";
-  }),
+  auth: authRouter,
 });
 
 export type AppRouter = typeof appRouter;
