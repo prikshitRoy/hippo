@@ -1,15 +1,24 @@
 //src/get-payload.ts
 import type { InitOptions } from "payload/config";
 import payload, { Payload } from "payload";
+import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import path from "path";
 
-//! This line of code ensures that the .env file is loaded and its variables are accessible within the Node.js environment.
 dotenv.config({
   path: path.resolve(__dirname, "../.env"),
 });
 
-//! Using Caching
+const transporter = nodemailer.createTransport({
+  host: "smtp.resend.com",
+  secure: true,
+  port: 465,
+  auth: {
+    user: "resend",
+    pass: process.env.RESEND_API_KEY,
+  },
+});
+
 let cached = (global as any).payload;
 if (!cached) {
   cached = (global as any).payload = {
@@ -35,6 +44,11 @@ export const getPayloadClient = async ({
 
   if (!cached.promise) {
     cached.promise = payload.init({
+      email: {
+        transport: transporter,
+        fromAddress: "delivered@resend.dev",
+        fromName: "DigitalHippo",
+      },
       secret: process.env.PAYlOAD_SECRET,
       local: initOptions?.express ? false : true,
       ...(initOptions || {}),
