@@ -43,8 +43,6 @@ const Page = () => {
     onSuccess: async () => {
       toast.success("Signed in sucessfully");
 
-      router.refresh();
-
       if (origin) {
         router.push(`/$(origin)`);
         return;
@@ -56,6 +54,8 @@ const Page = () => {
       }
 
       router.push("/");
+
+      router.refresh();
     },
 
     onError: (errors) => {
