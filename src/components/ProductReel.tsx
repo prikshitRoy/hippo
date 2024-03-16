@@ -1,13 +1,32 @@
+"use client";
+
 import Link from "next/link";
+import { trpc } from "@/trpc/client";
+import { TypeQueryValidator } from "@/lib/validators/query-validator";
 
 interface ProductReelsProps {
   title: string;
   subtitle?: string;
   href?: string;
+  query: TypeQueryValidator;
 }
 
+const FALLBACK_LIMIT = 4;
+
 const ProductReel = (props: ProductReelsProps) => {
-  const { title, subtitle, href } = props;
+  const { title, subtitle, href, query } = props;
+
+  const { data } = trpc.getInfiniteProducts.useInfiniteQuery(
+    {
+      limit: query.limit ?? FALLBACK_LIMIT,
+      query,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextPage,
+    }
+  );
+
+  console.log("DATA", data);
 
   return (
     <section className="py-12">
