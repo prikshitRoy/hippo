@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { trpc } from "@/trpc/client";
+import { Product } from "@/payload-types";
+import ProductListing from "./ProductListing";
 import { TypeQueryValidator } from "@/lib/validators/query-validator";
 
-interface ProductReelsProps {
+interface ProductReelProps {
   title: string;
   subtitle?: string;
   href?: string;
@@ -13,20 +15,28 @@ interface ProductReelsProps {
 
 const FALLBACK_LIMIT = 4;
 
-const ProductReel = (props: ProductReelsProps) => {
+const ProductReel = (props: ProductReelProps) => {
   const { title, subtitle, href, query } = props;
 
-  const { data } = trpc.getInfiniteProducts.useInfiniteQuery(
-    {
-      limit: query.limit ?? FALLBACK_LIMIT,
-      query,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextPage,
-    }
-  );
+  const { data: queryResults, isLoading } =
+    trpc.getInfiniteProducts.useInfiniteQuery(
+      {
+        limit: query.limit ?? FALLBACK_LIMIT,
+        query,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextPage,
+      }
+    );
 
-  console.log("DATA", data);
+  const products = queryResults?.pages.flatMap((page) => page.items);
+
+  let map: (Product | null)[] = [];
+  if (products && products.length) {
+    map = products!;
+  } else if (isLoading) {
+    map = new Array<null>(query.limit ?? FALLBACK_LIMIT).fill(null);
+  }
 
   return (
     <section className="py-12">
@@ -47,17 +57,26 @@ const ProductReel = (props: ProductReelsProps) => {
             className="hidden text-sm font-medium text-blue-600 hover:text-blue-500 md:block"
             href={href}
           >
-            Shoping the collection <span aria-hidden="true">&rarr;</span>
+            Shop the collection <span aria-hidden="true">&rarr;</span>
           </Link>
         ) : null}
       </div>
 
       <div className="relative">
         <div className="mt-6 flex items-center w-full">
-          <div className="w-full grid grid-cols-2 gap-x-4 gap-y-10  sm:gap-x-6 md:grid-cols-4 md:gap-y-10 lg:gap-x-8"></div>
+          <div className="w-full grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-4 md:gap-y-10 lg:gap-x-8">
+            {map.map((product, i) => (
+              <ProductListing
+                key={`product-${i}`}
+                product={product}
+                index={i}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 };
+
 export default ProductReel;
