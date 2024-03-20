@@ -1,6 +1,5 @@
 "use client";
 
-import { ShoppingCartIcon } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,14 +8,31 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { Separator } from "./ui/separator";
-import { formatePrice } from "@/lib/utils";
 import Link from "next/link";
-import { buttonVariants } from "./ui/button";
 import Image from "next/image";
+import CartItem from "./CartItems";
+import { useCart } from "@/hooks/use-cart";
+import { formatePrice } from "@/lib/utils";
+import { Separator } from "./ui/separator";
+import { useEffect, useState } from "react";
+import { buttonVariants } from "./ui/button";
+import { ScrollArea } from "./ui/scroll-area";
+import { Circle, ShoppingCartIcon } from "lucide-react";
 
 const Cart = () => {
-  const itemCount = 1;
+  const { items } = useCart();
+  const itemCount = items.length;
+
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const cartTotal = items.reduce(
+    (total, { product }) => total + product.price,
+    0
+  );
+
   const fee = 1;
 
   return (
@@ -27,7 +43,11 @@ const Cart = () => {
           className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
         />
         <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-800">
-          {itemCount}
+          {isMounted ? (
+            itemCount
+          ) : (
+            <Circle className="w-2 h-2 animate-spin bg-blue-900" />
+          )}
         </span>
       </SheetTrigger>
 
@@ -39,7 +59,12 @@ const Cart = () => {
         {itemCount > 0 ? (
           <>
             <div className="flex w-full flex-col pr-6">
-              {/* TODO: Cart logic  */}
+              {/* Cart logic  */}
+              <ScrollArea>
+                {items.map(({ product }) => (
+                  <CartItem product={product} key={product.id} />
+                ))}
+              </ScrollArea>
               Cart items
             </div>
             <div className="space-y-4 pr-6">
@@ -59,7 +84,9 @@ const Cart = () => {
                 </div>
                 <div className="flex">
                   <span className="flex-1">Total</span>
-                  <span className="flex-1">{formatePrice(fee)}</span>
+                  <span className="flex-1">
+                    {formatePrice(cartTotal + fee)}
+                  </span>
                 </div>
               </div>
 
