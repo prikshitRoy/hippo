@@ -34,8 +34,8 @@ interface Args {
 export const getPayloadClient = async ({
   initOptions,
 }: Args = {}): Promise<Payload> => {
-  if (!process.env.PAYlOAD_SECRET) {
-    throw new Error("PAYlOAD_SECRET is missing");
+  if (!process.env.PAYLOAD_SECRET) {
+    throw new Error("PAYLOAD_SECRET is missing");
   }
 
   if (cached.client) {
@@ -49,7 +49,7 @@ export const getPayloadClient = async ({
         fromAddress: "delivered@resend.dev",
         fromName: "DigitalHippo",
       },
-      secret: process.env.PAYlOAD_SECRET,
+      secret: process.env.PAYLOAD_SECRET,
       local: initOptions?.express ? false : true,
       ...(initOptions || {}),
     });
