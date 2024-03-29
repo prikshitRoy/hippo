@@ -1,7 +1,9 @@
 //src/server.ts
+import path from "path";
 import express from "express";
 import bodyParser from "body-parser";
 import { IncomingMessage } from "http";
+import nextBuild from "next/dist/build";
 import { appRouter } from "./trpc/index";
 import { getPayloadClient } from "./get-payload";
 import { stripeWebhookHandler } from "./webhooks";
@@ -38,6 +40,19 @@ const start = async () => {
       },
     },
   });
+
+  if (process.env.NEXT_BUILD) {
+    app.listen(PORT, async () => {
+      payload.logger.info("Next.js is building for production");
+
+      //@ts-expect-error
+      await nextBuild(path.join(__dirname, "../"));
+
+      process.exit();
+    });
+
+    return;
+  }
 
   app.use(
     "/api/trpc",
