@@ -35,6 +35,7 @@ export default buildConfig({
   },
   editor: slateEditor({}),
   db: mongooseAdapter({
+    transactionOptions: false,
     url: process.env.MONGODB_URL!,
   }),
   typescript: {
