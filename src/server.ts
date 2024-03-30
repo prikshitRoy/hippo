@@ -1,10 +1,12 @@
 //src/server.ts
 import path from "path";
+import { parse } from "url";
 import express from "express";
 import bodyParser from "body-parser";
 import { IncomingMessage } from "http";
 import nextBuild from "next/dist/build";
 import { appRouter } from "./trpc/index";
+import { PayloadRequest } from "payload/types";
 import { getPayloadClient } from "./get-payload";
 import { stripeWebhookHandler } from "./webhooks";
 import { inferAsyncReturnType } from "@trpc/server";
@@ -40,6 +42,17 @@ const start = async () => {
       },
     },
   });
+
+  //! You have to be logged in to be able to access your cart page
+  const cartRouter = express.Router();
+  cartRouter.use(payload.authenticate);
+  cartRouter.get("/", (req, res) => {
+    const request = req as PayloadRequest;
+    if (!request.user) return res.redirect("/sign-in?origin=cart");
+    const parsedUrl = parse(req.url, true);
+    return nextApp.render(req, res, "/cart", parsedUrl.query);
+  });
+  app.use("/cart", cartRouter);
 
   if (process.env.NEXT_BUILD) {
     app.listen(PORT, async () => {
